@@ -1,0 +1,138 @@
+{
+  "transits": [
+    {
+      "id": "MTA",
+      "city": "New York",
+      "subway": {
+        "routes": [
+          {
+            "name": "A",
+            "feedid": "A-C-E"
+          },
+          {
+            "name": "C",
+            "feedid": "A-C-E"
+          },
+          {
+            "name": "E",
+            "feedid": "A-C-E"
+          },
+          {
+            "name": "G",
+            "feedid": "G"
+          },
+          {
+            "name": "N",
+            "feedid": "N-Q-R-W"
+          },
+          {
+            "name": "Q",
+            "feedid": "N-Q-R-W"
+          },
+          {
+            "name": "R",
+            "feedid": "N-Q-R-W"
+          },
+          {
+            "name": "W",
+            "feedid": "N-Q-R-W"
+          },
+          {
+            "name": "1",
+            "feedid": "1-2-3-4-5-6-7"
+          },
+          {
+            "name": "2",
+            "feedid": "1-2-3-4-5-6-7"
+          },
+          {
+            "name": "3",
+            "feedid": "1-2-3-4-5-6-7"
+          },
+          {
+            "name": "4",
+            "feedid": "1-2-3-4-5-6-7"
+          },
+          {
+            "name": "5",
+            "feedid": "1-2-3-4-5-6-7"
+          },
+          {
+            "name": "6",
+            "feedid": "1-2-3-4-5-6-7"
+          },
+          {
+            "name": "7",
+            "feedid": "1-2-3-4-5-6-7"
+          },
+          {
+            "name": "B",
+            "feedid": "B-D-F-M"
+          },
+          {
+            "name": "D",
+            "feedid": "B-D-F-M"
+          },
+          {
+            "name": "F",
+            "feedid": "B-D-F-M"
+          },
+          {
+            "name": "M",
+            "feedid": "B-D-F-M"
+          },
+          {
+            "name": "J",
+            "feedid": "J-Z"
+          },
+          {
+            "name": "Z",
+            "feedid": "J-Z"
+          },
+          {
+            "name": "L",
+            "feedid": "L"
+          },
+          {
+            "name": "SIR",
+            "feedid": "SIR"
+          }
+        ]
+      },
+      "feed": [
+        {
+          "id": "A-C-E",
+          "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace"
+        },
+        {
+          "id": "G",
+          "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-g"
+        },
+        {
+          "id": "N-Q-R-W",
+          "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-nqrw"
+        },
+        {
+          "id": "1-2-3-4-5-6-7",
+          "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs"
+        },
+        {
+          "id": "B-D-F-M",
+          "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm"
+        },
+        {
+          "id": "J-Z",
+          "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-jz"
+        },
+        {
+          "id": "L",
+          "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l"
+        },
+        {
+          "id": "SIR",
+          "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si"
+        }
+      ]
+    }
+  ]
+}
