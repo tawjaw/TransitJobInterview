@@ -1,5 +1,6 @@
 # Ignore generated directories
-./dist/
+dist/
+!packages/**/dist/
 exec/
 
 # Logs
