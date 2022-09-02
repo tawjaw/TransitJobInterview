@@ -1,5 +1,5 @@
 # Ignore generated directories
-dist/
+./dist/
 exec/
 
 # Logs
