@@ -151,7 +151,7 @@ export function getStops(
   return stops;
 }
 
-async function getTransitFeedUpdates(feedurl: string) {
+async function getDecodedTransitFeedUpdates(feedurl: string) {
   try {
     const { data, status } = await axios.get(
       feedurl,
@@ -163,7 +163,9 @@ async function getTransitFeedUpdates(feedurl: string) {
       }
     );
     if (data && status == 200) {
-      return Promise.resolve(data);
+      return Promise.resolve(
+        GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(data)
+      );
     }
   } catch (error) {
     if (error instanceof Error) {
@@ -178,10 +180,7 @@ export async function getDepartureStopTimeUpdatesByStopId(
   stopId: string
 ): Promise<StopTimeUpdate[] | undefined> {
   try {
-    const feedUpdates = await getTransitFeedUpdates(feedurl);
-
-    const decodedFeedUpdates =
-      GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(feedUpdates);
+    const decodedFeedUpdates = await getDecodedTransitFeedUpdates(feedurl);
 
     const departureTimeUpdatesByStopId: StopTimeUpdate[] = [];
     decodedFeedUpdates.entity.forEach((entity: FeedEntity) => {
@@ -213,28 +212,35 @@ export async function getNextDepartures(
   transitId: string,
   mode: 'subway' | 'bus' | 'rail'
 ): Promise<Map<string, number[]>> {
-  const transit: Transit | undefined = getTransit(transitId);
+  try {
+    const transit: Transit | undefined = getTransit(transitId);
 
-  const route = getRoute(transit, mode, routeName);
+    const route = getRoute(transit, mode, routeName);
 
-  const feedurl = getFeedURL(transit, route);
+    const feedurl = getFeedURL(transit, route);
 
-  const departureUpdatesByStopId = await getDepartureStopTimeUpdatesByStopId(
-    feedurl,
-    stopid
-  );
-  if (!departureUpdatesByStopId) return Promise.reject();
+    const departureUpdatesByStopId = await getDepartureStopTimeUpdatesByStopId(
+      feedurl,
+      stopid
+    );
+    if (!departureUpdatesByStopId) return Promise.reject();
 
-  const stopDepartureUpdatesMap = new Map<string, number[]>();
-  departureUpdatesByStopId.forEach((update) => {
-    const collection = stopDepartureUpdatesMap.get(update.stopId);
+    const stopDepartureUpdatesMap = new Map<string, number[]>();
+    departureUpdatesByStopId.forEach((update) => {
+      const collection = stopDepartureUpdatesMap.get(update.stopId);
 
-    if (!collection)
-      stopDepartureUpdatesMap.set(update.stopId, [update.departure.time.low]);
-    else collection.push(update.departure.time.low);
-  });
+      if (!collection)
+        stopDepartureUpdatesMap.set(update.stopId, [update.departure.time.low]);
+      else collection.push(update.departure.time.low);
+    });
 
-  return Promise.resolve(stopDepartureUpdatesMap);
+    return Promise.resolve(stopDepartureUpdatesMap);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log('error message: ', error.message);
+    }
+    return Promise.reject(error);
+  }
 }
 
 export async function printNextThreeDepartures(
@@ -243,17 +249,24 @@ export async function printNextThreeDepartures(
   transitId: string,
   mode: 'subway' | 'bus' | 'rail'
 ) {
-  getNextDepartures(stopid, routeName, transitId, mode).then((feedmap) => {
-    const keys = [...feedmap.keys()];
-    keys.forEach((key) => {
-      console.log(key);
-      feedmap
-        .get(key)
-        ?.sort()
-        .slice(0, 3)
-        .forEach((time) => {
-          console.log(moment(new Date(0).setUTCSeconds(time)).fromNow());
-        });
+  try {
+    getNextDepartures(stopid, routeName, transitId, mode).then((feedmap) => {
+      const keys = [...feedmap.keys()];
+      keys.forEach((key) => {
+        console.log(key);
+        feedmap
+          .get(key)
+          ?.sort()
+          .slice(0, 3)
+          .forEach((time) => {
+            console.log(moment(new Date(0).setUTCSeconds(time)).fromNow());
+          });
+      });
     });
-  });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log('error message: ', error.message);
+    }
+    return Promise.reject(error);
+  }
 }

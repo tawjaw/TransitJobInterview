@@ -17,6 +17,10 @@ try {
     .then((answer) => {
       const selectedRoute = answer.route;
       const stopsByRoute = getStops(selectedRoute, transitId, transitMode);
+      if (stopsByRoute.length === 0) {
+        console.log('sorry could not find stops for selected route.');
+        return;
+      }
       const stopsChoices = stopsByRoute.map((stop) => {
         return {
           name:
@@ -40,8 +44,14 @@ try {
             transitId,
             transitMode
           );
+        })
+        .catch(() => {
+          console.log('sorry something went wrong.');
         });
+    })
+    .catch(() => {
+      console.log('sorry something went wrong.');
     });
 } catch (error) {
-  console.log('Sorry something went wrong.');
+  console.log('sorry something went wrong.');
 }
