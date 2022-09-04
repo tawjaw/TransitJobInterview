@@ -125,9 +125,9 @@ export function getStops(
 
   const headers = ['id', 'name', 'lat', 'lon', 'type', 'parent'];
 
-  const fileContent = fs.readFileSync(csvFilePath, { encoding: 'utf-8' });
+  const stopsFileContent = fs.readFileSync(csvFilePath, { encoding: 'utf-8' });
 
-  const stops = parse(fileContent, {
+  const stops = parse(stopsFileContent, {
     delimiter: ',',
     columns: headers,
     fromLine: 2,
@@ -142,7 +142,8 @@ export function getStops(
       return columnValue;
     },
     on_record: (record: { id: string; type: number }, { lines }: any) =>
-      record['id'].charAt(0) === routeName.charAt(0) && record['type'] === 1
+      record['id'].charAt(0).toLowerCase() ===
+        routeName.charAt(0).toLowerCase() && record['type'] === 1
         ? record
         : null
   });
@@ -150,10 +151,7 @@ export function getStops(
   return stops;
 }
 
-export async function getStopFeedData(
-  feedurl: string,
-  stopId: string
-): Promise<StopTimeUpdate[] | undefined> {
+async function getTransitFeedUpdates(feedurl: string) {
   try {
     const { data, status } = await axios.get(
       feedurl,
@@ -165,21 +163,43 @@ export async function getStopFeedData(
       }
     );
     if (data && status == 200) {
-      var feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(data);
-      const updates: StopTimeUpdate[] = [];
-      feed.entity.forEach((entity: FeedEntity) => {
-        if (entity.tripUpdate?.trip?.routeId.charAt(0) === stopId.charAt(0)) {
-          const stopsUpdate = entity.tripUpdate.stopTimeUpdate.filter(
-            (stopupdate) =>
-              stopupdate.departure &&
-              stopupdate.departure.time &&
-              stopupdate.stopId.includes(stopId)
-          );
-          updates.push(...stopsUpdate);
-        }
-      });
-      return Promise.resolve(updates);
+      return Promise.resolve(data);
     }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log('error message: ', error.message);
+    }
+    return Promise.reject(error);
+  }
+}
+
+export async function getDepartureStopTimeUpdatesByStopId(
+  feedurl: string,
+  stopId: string
+): Promise<StopTimeUpdate[] | undefined> {
+  try {
+    const feedUpdates = await getTransitFeedUpdates(feedurl);
+
+    const decodedFeedUpdates =
+      GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(feedUpdates);
+
+    const departureTimeUpdatesByStopId: StopTimeUpdate[] = [];
+    decodedFeedUpdates.entity.forEach((entity: FeedEntity) => {
+      if (
+        entity.tripUpdate?.trip?.routeId.charAt(0).toLowerCase() ===
+        stopId.charAt(0).toLowerCase()
+      ) {
+        const stopsUpdate = entity.tripUpdate.stopTimeUpdate.filter(
+          (stopupdate) =>
+            stopupdate.departure &&
+            stopupdate.departure.time &&
+            stopupdate.stopId.includes(stopId)
+        );
+        departureTimeUpdatesByStopId.push(...stopsUpdate);
+      }
+    });
+
+    return Promise.resolve(departureTimeUpdatesByStopId);
   } catch (error) {
     if (error instanceof Error) {
       console.log('error message: ', error.message);
@@ -199,18 +219,22 @@ export async function getNextDepartures(
 
   const feedurl = getFeedURL(transit, route);
 
-  const feedupdates = await getStopFeedData(feedurl, stopid);
-  if (!feedupdates) return Promise.reject();
+  const departureUpdatesByStopId = await getDepartureStopTimeUpdatesByStopId(
+    feedurl,
+    stopid
+  );
+  if (!departureUpdatesByStopId) return Promise.reject();
 
-  const feedmap = new Map<string, number[]>();
-  feedupdates.forEach((element) => {
-    const collection = feedmap.get(element.stopId);
+  const stopDepartureUpdatesMap = new Map<string, number[]>();
+  departureUpdatesByStopId.forEach((update) => {
+    const collection = stopDepartureUpdatesMap.get(update.stopId);
 
-    if (!collection) feedmap.set(element.stopId, [element.departure.time.low]);
-    else collection.push(element.departure.time.low);
+    if (!collection)
+      stopDepartureUpdatesMap.set(update.stopId, [update.departure.time.low]);
+    else collection.push(update.departure.time.low);
   });
 
-  return Promise.resolve(feedmap);
+  return Promise.resolve(stopDepartureUpdatesMap);
 }
 
 export async function printNextThreeDepartures(
