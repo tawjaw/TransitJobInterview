@@ -1,5 +1,10 @@
-import { getRoutes, getStops, printNextThreeDepartures } from './Transit';
+import {
+  getRoutes,
+  getStationsByRouteId,
+  printNextThreeDepartures
+} from './Transit';
 import inquirer from 'inquirer';
+import { stopToString } from './Transit/utils';
 
 const transitId = 'MTA';
 const transitMode = 'subway';
@@ -16,15 +21,18 @@ try {
     })
     .then((answer) => {
       const selectedRoute = answer.route;
-      const stopsByRoute = getStops(selectedRoute, transitId, transitMode);
+      const stopsByRoute = getStationsByRouteId(selectedRoute, transitId);
+      if (!stopsByRoute) {
+        console.log('sorry, cannot find stops for the selected route');
+        return;
+      }
       if (stopsByRoute.length === 0) {
         console.log('sorry could not find stops for selected route.');
         return;
       }
       const stopsChoices = stopsByRoute.map((stop) => {
         return {
-          name:
-            stop.name + '(' + stop.id + ')' + ': ' + stop.lat + ', ' + stop.lon,
+          name: stopToString(stop),
           value: stop.id
         };
       });
@@ -45,11 +53,11 @@ try {
             transitMode
           );
         })
-        .catch(() => {
+        .catch((error) => {
           console.log('sorry something went wrong.');
         });
     })
-    .catch(() => {
+    .catch((error) => {
       console.log('sorry something went wrong.');
     });
 } catch (error) {

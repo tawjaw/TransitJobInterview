@@ -7,18 +7,15 @@ import {
   FeedEntity
 } from './types';
 import tranistfeed from './data/TransitFeed.json';
-import { parse } from 'csv-parse';
 
-import * as fs from 'fs';
-import * as path from 'path';
 import moment from 'moment';
-
-import { isString } from './utils';
 
 import { MTA_API_KEY } from './utils/envvar';
 //@ts-ignore
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import axios from 'axios';
+import { getStopByStopId } from './staticGtfs';
+import { stopToString } from './utils';
 
 /**
  * Returns all the transit data for a given transit id based on the data file TransitFeed.json.
@@ -93,62 +90,6 @@ export function getRoutes(
     throw new Error(`Can not find routes for "${mode}" in ${transit.city}`);
 
   return routes;
-}
-
-/**
- * Returns all the stops for a given route, transit and mode based on the data file stops.txt.
- *
- * @remarks
- * The stops.txt file only has data for the MTA subway transit.
- * So the function raises an error if any other transit or mode.
- * For adding multiple transits and modes it would be better to add transit and mode as columns in the CSV file
- * Or have a better/more effecient storage than a csv file for the data
- *
- * An assumption is made here that the first letter of the stop_id refers to the route name.
- *
- * @param routeName - The name of the route
- * @param transitId - The ID to identify a transit. For example MTA for New York MTA transit.
- * @param mode - The transit mode. Expects "subway" | "bus" | "rail"
- * @throws {@link Error} if the transitId or mode not found in the stops.csv file
- * @returns A list of {@link Stop} objects.
- *
- */
-export function getStops(
-  routeName: string,
-  transitId: string,
-  mode: 'subway' | 'bus' | 'rail'
-): Stop[] {
-  if (transitId !== 'MTA' || mode !== 'subway')
-    throw new Error(`Can not find stops for "${mode}" in ${transitId}`);
-
-  const csvFilePath = path.resolve(__dirname, './data/stops.txt');
-
-  const headers = ['id', 'name', 'lat', 'lon', 'type', 'parent'];
-
-  const stopsFileContent = fs.readFileSync(csvFilePath, { encoding: 'utf-8' });
-
-  const stops = parse(stopsFileContent, {
-    delimiter: ',',
-    columns: headers,
-    fromLine: 2,
-    cast: (columnValue: string, context: { column: any }) => {
-      if (
-        isString(context.column) &&
-        new RegExp('lat|lon|type').test(String(context.column))
-      ) {
-        return parseFloat(columnValue);
-      }
-
-      return columnValue;
-    },
-    on_record: (record: { id: string; type: number }, { lines }: any) =>
-      record['id'].charAt(0).toLowerCase() ===
-        routeName.charAt(0).toLowerCase() && record['type'] === 1
-        ? record
-        : null
-  });
-
-  return stops;
 }
 
 async function getDecodedTransitFeedUpdates(feedurl: string) {
@@ -253,7 +194,9 @@ export async function printNextThreeDepartures(
     getNextDepartures(stopid, routeName, transitId, mode).then((feedmap) => {
       const keys = [...feedmap.keys()];
       keys.forEach((key) => {
-        console.log(key);
+        const stop = getStopByStopId(key, transitId);
+        if (!stop) return;
+        console.log(stopToString(stop));
         feedmap
           .get(key)
           ?.sort()
@@ -270,3 +213,5 @@ export async function printNextThreeDepartures(
     return Promise.reject(error);
   }
 }
+
+export { getStationsByRouteId, getStopByStopId } from './staticGtfs';

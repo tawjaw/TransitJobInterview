@@ -13,7 +13,7 @@
   "scripts": {
     "dev": "ts-node ./src/index.ts",
     "clean": "rimraf ./dist/ ./exec/",
-    "build": "npm run clean && tsc && copyfiles -f src/Transit/data/*.txt dist/Transit/data",
+    "build": "npm run clean && tsc && copyfiles -u 3 ./src/Transit/data/**/*.txt dist/Transit/data",
     "test": "ava",
     "test:watch": "ava --watch",
     "bundle": "npm run build && pkg . --out-dir ./exec/ ",

@@ -1,0 +1,41 @@
+import test from 'ava';
+
+import { getStationsByRouteId, getStopByStopId } from './staticGtfs';
+
+test('getStationsByRouteId - should return all stops given a routeID and transitId.', async (t) => {
+  t.deepEqual(getStationsByRouteId('X', 'MTA'), undefined);
+  t.deepEqual(getStationsByRouteId('E', 'MTA'), [
+    {
+      id: 'E01',
+      lat: 40.712582,
+      lon: -74.009781,
+      name: 'World Trade Center',
+      parent: '',
+      type: 1
+    }
+  ]);
+});
+
+test('getStationsByRouteId - should return undefined if routes are not found', async (t) => {
+  t.deepEqual(getStationsByRouteId('X', 'MTA'), undefined);
+});
+
+test('getStationsByRouteId - should throw error if transitId or mode not found ', async (t) => {
+  t.throws(() => getStationsByRouteId('A', 'MTL'));
+  t.throws(() => getStationsByRouteId('X', 'MTL'));
+});
+
+test('getStopByStopId - should return stop object with data defined in stops.txt ', async (t) => {
+  t.deepEqual(getStopByStopId('D40', 'MTA'), {
+    id: 'D40',
+    lat: 40.577621,
+    lon: -73.961376,
+    name: 'Brighton Beach',
+    parent: '',
+    type: 1
+  });
+});
+
+test('getStopByStopId - should return undefined if data is not defined in stops.txt ', async (t) => {
+  t.deepEqual(getStopByStopId('D52', 'MTA'), undefined);
+});

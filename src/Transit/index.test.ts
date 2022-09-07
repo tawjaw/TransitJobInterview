@@ -1,6 +1,6 @@
 import test from 'ava';
 import transitdata from './data/TransitFeed.json';
-import { getTransit, getRoute, getFeedURL, getRoutes, getStops } from '.';
+import { getTransit, getRoute, getFeedURL, getRoutes } from '.';
 
 test('getTransit - should return transit object from data file ', async (t) => {
   t.is(getTransit('MTA'), transitdata.transits[0]);
@@ -45,24 +45,4 @@ test('getRoutes - should return all routes given a transitId and mode ', async (
 test('getRoutes - should throw error if transitId or mode not found ', async (t) => {
   t.throws(() => getRoutes('MTL', 'subway'));
   t.throws(() => getRoutes('MTA', 'rail'));
-});
-
-test('getStops - should return all stops given a routeID, transitId and mode. If routeID is not found an empty array is returned.', async (t) => {
-  t.deepEqual(getStops('X', 'MTA', 'subway'), []);
-  t.deepEqual(getStops('E', 'MTA', 'subway'), [
-    {
-      id: 'E01',
-      lat: 40.712582,
-      lon: -74.009781,
-      name: 'World Trade Center',
-      parent: '',
-      type: 1
-    }
-  ]);
-});
-
-test('getStops - should throw error if transitId or mode not found ', async (t) => {
-  t.throws(() => getStops('A', 'MTA', 'bus'));
-  t.throws(() => getStops('A', 'MTL', 'subway'));
-  t.throws(() => getStops('X', 'MTL', 'subway'));
 });
