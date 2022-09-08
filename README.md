@@ -1,6 +1,6 @@
 # Transit Test
 
-Interview test for Tranit App.
+Interview test for Transit App.
 
 ## Assumptions
 
