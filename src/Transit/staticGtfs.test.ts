@@ -34,6 +34,25 @@ test('getStopByStopId - should return stop object with data defined in stops.txt
     parent: '',
     type: 1
   });
+
+  /*
+   * the STM stops.txt was added just to test the funcitonality of loading different
+   * transit stops.txt. The original file was modified to remove columns to match the
+   * stops.txt I recieved for MTA
+   * The data was downloaded from STM developers page https://www.stm.info/en/about/developers
+   * However some assumptions I made do not work in this case. For example the stop id
+   * does not follow the same format. a station starts with STATION_
+   * With the assumption that the first character represents the id of a route, this does not work.
+   *
+   */
+  t.deepEqual(getStopByStopId('STATION_M120', 'STM'), {
+    id: 'STATION_M120',
+    lat: 45.451158,
+    lon: -73.593242,
+    name: 'STATION MONK',
+    parent: '',
+    type: 1
+  });
 });
 
 test('getStopByStopId - should return undefined if data is not defined in stops.txt ', async (t) => {

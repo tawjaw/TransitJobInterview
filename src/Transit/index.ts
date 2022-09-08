@@ -1,11 +1,4 @@
-import {
-  Transit,
-  Stop,
-  TransitMode,
-  Route,
-  StopTimeUpdate,
-  FeedEntity
-} from './types';
+import { Transit, Route, StopTimeUpdate, FeedEntity } from './types';
 import tranistfeed from './data/TransitFeed.json';
 
 import moment from 'moment';
@@ -60,7 +53,7 @@ export function getRoute(
  * Returns the feed url for the specific transit and route passed from the data file TransitFeed.json.
  *
  * @param transit - Transit object that can be get using {@Link getTransit}
- * @param routeName - name of the route
+ * @param route - route object
  * @throws {@link Error} if the feed is not found for the specific route
  * @returns A Route object.
  *

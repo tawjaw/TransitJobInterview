@@ -59,20 +59,20 @@ function loadStopsTxtToMaps(transitId: string) {
       return columnValue;
     },
     on_record: (record: Stop, { lines }: any) => {
+      const routeId = record.id.charAt(0).toUpperCase();
+
       //add the stop to stopsIndexedByIdMap
       stopsIndexedByIdMap?.set(record.id, record);
       //add the stop to stopsIndexedByRouteIdMap
       //check if route is already exist
 
-      if (stopsIndexedByRouteIdMap?.has(record.id.charAt(0))) {
-        stopsIndexedByRouteIdMap.get(record.id.charAt(0))?.push(record);
+      if (stopsIndexedByRouteIdMap?.has(routeId)) {
+        stopsIndexedByRouteIdMap.get(routeId)?.push(record);
       } else {
-        stopsIndexedByRouteIdMap?.set(record.id.charAt(0), [record]);
+        stopsIndexedByRouteIdMap?.set(routeId, [record]);
       }
     }
   });
-
-  return stops;
 }
 /**
  * Returns all the stops for a given route and transit based on the stops.txt
@@ -94,7 +94,7 @@ export function getStationsByRouteId(
   loadStopsTxtToMaps(transitId);
   return stopsByTransitIndexedByRouteId
     .get(transitId)
-    ?.get(routeName.charAt(0))
+    ?.get(routeName.charAt(0).toUpperCase())
     ?.filter((stop) => stop.type === 1);
 }
 
